@@ -1,17 +1,17 @@
 import express from 'express';
-import mongoose from 'mongoose'; 
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import axios from 'axios';
+import { postLogin, postSignup } from "./controllers/user.js";
 
 dotenv.config();
-const app=express();
+const app = express();
+
 app.use(cors());
 app.use(express.json());
-console.log("MONGO_URI:", process.env.MONGO_URI);
 
-//connect to mongoose
-const connectDB = async()=>{
+// Connect to MongoDB
+const connectDB = async () => {
     try {
         const conn = await mongoose.connect(process.env.MONGO_URL);
         if (conn) {
@@ -19,21 +19,29 @@ const connectDB = async()=>{
         }
     } catch (error) {
         console.error("MongoDB connection failed:", error.message);
-        process.exit(1); // Exit the process if connection fails
+        process.exit(1);
     }
 };
 
-app.get("/:health",(req, res)=>{
+// Auth
+app.post("/signup", postSignup);
+app.post("/login", postLogin);
+
+// Health check route
+app.get("/health", (req, res) => {
     res.json({
-        success:true,
-        message:"Server is running"
-    })
+        success: true,
+        message: "Server is running"
+    });
 });
 
 
-const PORT = process.env.PORT|| 5002;
 
-app.listen(PORT,()=>{
-   console.log(`Server is running on ${PORT}`)
-   connectDB();
+
+
+// Start server
+const PORT = process.env.PORT || 5002;
+app.listen(PORT, () => {
+    console.log(`Server is running on ${PORT}`);
+    connectDB();
 });
